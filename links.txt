@@ -1,0 +1,3 @@
+http://10.24.1.71/tc/loading?contract_type=FLEET&location=174222&locationExternalId=171385&locationName=MotherHub_YKB&ptID=112508265&vehicle=HR55JJ3917
+
+http://10.24.1.71/tc/loading?contract_type=FLEET&location=174222&locationExternalId=171385&locationName=MotherHub_YKB&ptID=112501679&vehicle=HR38AAA3077
