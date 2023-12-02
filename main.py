@@ -17,6 +17,17 @@ from idna import valid_contextj
 from datetime import datetime, timedelta
 import logging
 import shutil
+import pymysql
+
+
+conn = pymysql.connect(
+    host='10.244.18.98',
+    user='abhishek',
+    password='abhi',
+    db='ob',
+    charset='utf8mb4',
+    cursorclass=pymysql.cursors.DictCursor
+)
 
 op = webdriver.ChromeOptions()
 # op.add_argument('--headless=new')
@@ -80,10 +91,33 @@ def vehicle_selector(vehicle_number , type):
         print(E)
 
 
+def load_extractor():
+    try:
+        load_data = driver.find_element(By.XPATH , "/html/body/div[1]/div/div/div/div/main/div/div/div/div[3]/div[2]/div/div/div/div").text
+        driver.find_element(By.XPATH, "/html/body/div[1]/div/div/div/div/main/div/div/div/div[3]/div[2]/div/div/div/form/div/div[3]/div[2]/div[2]/div/div[3]/button/i").click()
+        print(load_data)
+    except:
+        print("Load Data not Visible")
+    return load_data
+
 
 ekart_Selection()
 time.sleep(1)
 login()
 time.sleep(2)
-vehicle_selector("HR38AAA3077" , "FLEET")
-time.sleep(50000)
+vehicle_selector("DL01LAE1253" , "FLEET")
+time.sleep(1)
+while True:
+    load_extractor()
+    try:
+        vehicle = "DL01LAE1253"
+        dock = "DOCK 51"
+        destination = "MotherHub DIC"
+
+        with conn.cursor() as cursor:
+            sql = f"INSERT INTO a(b , c , d , e) VALUES (%s , %s , %s ,%s)"
+            cursor.execute(sql , (vehicle , load_extractor() , dock , destination))
+            conn.commit()
+    except Exception as E:
+        print(f"failed to send to sql server {E}" )
+
