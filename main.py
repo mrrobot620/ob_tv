@@ -19,7 +19,6 @@ import logging
 import shutil
 import pymysql
 
-
 conn = pymysql.connect(
     host='10.244.18.98',
     user='abhishek',
@@ -28,6 +27,18 @@ conn = pymysql.connect(
     charset='utf8mb4',
     cursorclass=pymysql.cursors.DictCursor
 )
+
+def read_data_from_db():
+    sql = "SELECT * FROM allocated"
+
+    # Execute the SQL query
+    with conn.cursor() as cursor:
+        cursor.execute(sql)
+        result = cursor.fetchall()  # Fetch all the data
+
+    return result
+
+
 
 op = webdriver.ChromeOptions()
 # op.add_argument('--headless=new')
@@ -84,14 +95,14 @@ def facility_selection():
     except Exception as E:
         print(f"Error {E}")
 
-def vehicle_selector(vehicle_number , type):
+
+
+
+def load_extractor(vehicle_number):
     try:
-        driver.get(f"http://10.24.1.71/tc/loading?contract_type={type}&location=174222&locationExternalId=171385&locationName=MotherHub_YKB&ptID=1&vehicle={vehicle_number}")
+        driver.get(f"http://10.24.1.71/tc/loading?contract_type=fleet&location=174222&locationExternalId=171385&locationName=MotherHub_YKB&ptID=1&vehicle={vehicle_number}")
     except Exception as E:
         print(E)
-
-
-def load_extractor():
     try:
         load_data = driver.find_element(By.XPATH , "/html/body/div[1]/div/div/div/div/main/div/div/div/div[3]/div[2]/div/div/div/div").text
         driver.find_element(By.XPATH, "/html/body/div[1]/div/div/div/div/main/div/div/div/div[3]/div[2]/div/div/div/form/div/div[3]/div[2]/div[2]/div/div[3]/button/i").click()
@@ -105,17 +116,23 @@ ekart_Selection()
 time.sleep(1)
 login()
 time.sleep(2)
-vehicle_selector("DL01LAE1253" , "FLEET")
 time.sleep(1)
 while True:
-    load_extractor()
+    for item in read_data_from_db():
+        dock_number = item['dock_number']
+        vehicle_data = item['vehicle_data']
+        destination = item['destination']
+        dock_in_time = item['dock_in_time']
+        status = item['status']
+        print(f"Dock Number: {dock_number}")
+        print(f"Vehicle Data: {vehicle_data}")
+        print(f"Destination: {destination}")
+        print(f"Dock In Time: {dock_in_time}")
+        print(f"Status: {status}")
+        load_extractor()
     try:
-        vehicle = "DL01LAE1253"
-        dock = "DOCK 51"
-        destination = "MotherHub DIC"
-
         with conn.cursor() as cursor:
-            sql = f"INSERT INTO a(b , c , d , e) VALUES (%s , %s , %s ,%s)"
+            sql = f"INSERT INTO dock57(b , c , d , e) VALUES (%s , %s , %s ,%s)"
             cursor.execute(sql , (vehicle , load_extractor() , dock , destination))
             conn.commit()
     except Exception as E:
